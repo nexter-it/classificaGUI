@@ -5,7 +5,7 @@ import re
 import random  # For generating random terrain elements
 
 # Settings for the UDP socket
-UDP_IP = "0.0.0.0"
+UDP_IP = "213.209.192.164"
 UDP_PORT = 4141
 
 # Create the UDP socket
