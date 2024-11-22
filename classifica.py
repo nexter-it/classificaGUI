@@ -87,8 +87,8 @@ udp_thread.start()
 pygame.init()
 
 # Window settings
-WINDOW_WIDTH = 1200  # Total window width
-WINDOW_HEIGHT = 700
+WINDOW_WIDTH = 1920 #Total window width
+WINDOW_HEIGHT = 1080
 screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption('Classifica Corse Cavalli')
 
