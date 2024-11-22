@@ -71,8 +71,8 @@ def parse_packet(packet):
             'distance_or_name': distance_or_name,
             'meters_to_finish': meters_to_finish,
             'y_coordinate': y_coordinate,
-            'speed': speed,
-            'time': time_str
+            'speed': speed
+            # 'time' field removed
         })
     # Update the standings in a thread-safe manner
     with standings_lock:
@@ -87,35 +87,43 @@ udp_thread.start()
 pygame.init()
 
 # Window settings
-WINDOW_WIDTH = 900  # Total window width
-WINDOW_HEIGHT = 600
+WINDOW_WIDTH = 1200  # Total window width
+WINDOW_HEIGHT = 700
 screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption('Classifica Corse Cavalli')
 
-# Font settings
-font = pygame.font.Font(None, 24)
-large_font = pygame.font.Font(None, 48)  # For larger text
+# Increase rendering resolution
+RENDER_SCALE = 4  # Increase this value for higher definition
+RENDER_WIDTH = WINDOW_WIDTH * RENDER_SCALE
+RENDER_HEIGHT = WINDOW_HEIGHT * RENDER_SCALE
 
-# Positioning constants
-LEFT_PANEL_WIDTH = 250  # Width of the left panel
-TRACK_START_X = LEFT_PANEL_WIDTH + 50
-TRACK_END_X = WINDOW_WIDTH - 50
-TRACK_TOP_Y = 200
-TRACK_BOTTOM_Y = 400
+# Create a high-resolution surface
+render_surface = pygame.Surface((RENDER_WIDTH, RENDER_HEIGHT))
+
+# Font settings
+font = pygame.font.Font(None, int(24 * RENDER_SCALE))
+large_font = pygame.font.Font(None, int(48 * RENDER_SCALE))  # For larger text
+
+# Positioning constants scaled
+LEFT_PANEL_WIDTH = int(250 * RENDER_SCALE)  # Width of the left panel
+TRACK_START_X = LEFT_PANEL_WIDTH + int(50 * RENDER_SCALE)
+TRACK_END_X = RENDER_WIDTH - int(50 * RENDER_SCALE)
+TRACK_TOP_Y = int(200 * RENDER_SCALE)
+TRACK_BOTTOM_Y = int(400 * RENDER_SCALE)
 
 # Horse positions
 positions = {}
 alpha = 0.1  # Smoothing factor for positions
 
-position_size = 30        # Size of the position square
-position_padding = 10     # Space between position square and horse ID
+position_size = int(30 * RENDER_SCALE)        # Size of the position square
+position_padding = int(10 * RENDER_SCALE)     # Space between position square and horse ID
 
 # Initialize terrain graphic elements
 terrain_elements = []
-terrain_element_speed = 5  # Speed of terrain elements
+terrain_element_speed = int(5 * RENDER_SCALE)  # Speed of terrain elements
 for i in range(20):
     x = random.randint(TRACK_START_X, TRACK_END_X)
-    y = random.randint(TRACK_TOP_Y + 5, TRACK_BOTTOM_Y - 5)
+    y = random.randint(TRACK_TOP_Y + int(5 * RENDER_SCALE), TRACK_BOTTOM_Y - int(5 * RENDER_SCALE))
     terrain_elements.append({'x': x, 'y': y})
 
 # Limits for mapping Y coordinates
@@ -130,53 +138,53 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    # Clear the screen
-    screen.fill((70, 70, 70))  # Background color
+    # Clear the render surface
+    render_surface.fill((0, 255, 0))  # Background color changed to green screen
 
-    # Draw the left panel
-    pygame.draw.rect(screen, (50, 50, 50), (0, 0, LEFT_PANEL_WIDTH, WINDOW_HEIGHT))
+    # Draw the left panel in green screen
+    pygame.draw.rect(render_surface, (0, 255, 0), (0, 0, LEFT_PANEL_WIDTH, RENDER_HEIGHT))
 
     # Get a copy of the current standings
     with standings_lock:
         current_standings = standings.copy()
 
     # Draw the standings
-    y_offset = 20
-    entry_height = 50
-    entry_spacing = 10
+    y_offset = int(20 * RENDER_SCALE)
+    entry_height = int(50 * RENDER_SCALE)
+    entry_spacing = int(10 * RENDER_SCALE)
 
     for idx, horse in enumerate(current_standings):
         position_number = idx + 1
 
         # Draw the rounded square for the position
-        position_rect_x = 10
+        position_rect_x = int(10 * RENDER_SCALE)
         position_rect_y = y_offset + (entry_height - position_size) // 2
         position_rect = pygame.Rect(position_rect_x, position_rect_y, position_size, position_size)
-        pygame.draw.rect(screen, (150, 150, 150), position_rect, border_radius=5)  # Rounded corners
+        pygame.draw.rect(render_surface, (150, 150, 150), position_rect, border_radius=int(5 * RENDER_SCALE))  # Rounded corners
 
         # Write the position number inside the square with the '°' symbol
         position_text = font.render(str(position_number) + '°', True, (255, 255, 255))
         position_text_rect = position_text.get_rect(center=position_rect.center)
-        screen.blit(position_text, position_text_rect)
+        render_surface.blit(position_text, position_text_rect)
 
         # Draw the outer rectangle for the horse with rounded corners
         entry_rect_x = position_rect.right + position_padding  # Shift entry_rect to the right of position_rect
-        entry_rect_width = LEFT_PANEL_WIDTH - entry_rect_x - 10  # Subtract right margin
+        entry_rect_width = LEFT_PANEL_WIDTH - entry_rect_x - int(10 * RENDER_SCALE)  # Subtract right margin
         entry_rect = pygame.Rect(entry_rect_x, y_offset, entry_rect_width, entry_height)
-        pygame.draw.rect(screen, (70, 70, 70), entry_rect, border_radius=10)
+        pygame.draw.rect(render_surface, (70, 70, 70), entry_rect, border_radius=int(10 * RENDER_SCALE))
 
         # Draw the rounded rectangle with the horse ID
-        pill_width = 60
-        pill_height = 30
-        pill_x = entry_rect.x + 10  # Positioned to the left in entry_rect
+        pill_width = int(60 * RENDER_SCALE)
+        pill_height = int(30 * RENDER_SCALE)
+        pill_x = entry_rect.x + int(10 * RENDER_SCALE)  # Positioned to the left in entry_rect
         pill_y = entry_rect.y + (entry_height - pill_height) // 2
         pill_rect = pygame.Rect(pill_x, pill_y, pill_width, pill_height)
-        pygame.draw.rect(screen, (200, 200, 200), pill_rect, border_radius=15)
+        pygame.draw.rect(render_surface, (200, 200, 200), pill_rect, border_radius=int(15 * RENDER_SCALE))
 
         # Write the horse ID inside the rounded rectangle
         horse_id_text = font.render(str(horse['horse_id']), True, (0, 0, 0))
         horse_id_rect = horse_id_text.get_rect(center=pill_rect.center)
-        screen.blit(horse_id_text, horse_id_rect)
+        render_surface.blit(horse_id_text, horse_id_rect)
 
         # Show the distance to the right of the rounded rectangle
         if horse['distance'] is not None:
@@ -187,35 +195,35 @@ while running:
         distance_surface = font.render(distance_text, True, (255, 255, 255))
 
         # Draw a rounded rectangle behind the distance
-        distance_bg_width = distance_surface.get_width() + 10
-        distance_bg_height = distance_surface.get_height() + 4
-        distance_bg_x = pill_x + pill_width + 10  # To the right of the pill
+        distance_bg_width = distance_surface.get_width() + int(10 * RENDER_SCALE)
+        distance_bg_height = distance_surface.get_height() + int(4 * RENDER_SCALE)
+        distance_bg_x = pill_x + pill_width + int(10 * RENDER_SCALE)  # To the right of the pill
         distance_bg_y = entry_rect.y + (entry_height - distance_bg_height) // 2
         distance_bg_rect = pygame.Rect(distance_bg_x, distance_bg_y, distance_bg_width, distance_bg_height)
-        pygame.draw.rect(screen, (100, 100, 100), distance_bg_rect, border_radius=10)
+        pygame.draw.rect(render_surface, (100, 100, 100), distance_bg_rect, border_radius=int(10 * RENDER_SCALE))
 
         # Position the distance text
         distance_rect = distance_surface.get_rect(center=distance_bg_rect.center)
-        screen.blit(distance_surface, distance_rect)
+        render_surface.blit(distance_surface, distance_rect)
 
         y_offset += entry_height + entry_spacing  # Move to the next entry
 
     # Draw the sandy track
     sandy_color = (194, 178, 128)
-    pygame.draw.rect(screen, sandy_color, (TRACK_START_X, TRACK_TOP_Y, TRACK_END_X - TRACK_START_X, TRACK_BOTTOM_Y - TRACK_TOP_Y))
+    pygame.draw.rect(render_surface, sandy_color, (TRACK_START_X, TRACK_TOP_Y, TRACK_END_X - TRACK_START_X, TRACK_BOTTOM_Y - TRACK_TOP_Y))
 
     # Update and draw the terrain graphic elements
     for element in terrain_elements:
         element['x'] -= terrain_element_speed
         if element['x'] < TRACK_START_X:
             element['x'] = TRACK_END_X
-            element['y'] = random.randint(TRACK_TOP_Y + 5, TRACK_BOTTOM_Y - 5)
+            element['y'] = random.randint(TRACK_TOP_Y + int(5 * RENDER_SCALE), TRACK_BOTTOM_Y - int(5 * RENDER_SCALE))
         # Draw the terrain element (e.g., small lines)
-        pygame.draw.rect(screen, (160, 82, 45), (element['x'], element['y'], 5, 5))
+        pygame.draw.rect(render_surface, (160, 82, 45), (element['x'], element['y'], int(5 * RENDER_SCALE), int(5 * RENDER_SCALE)))
 
     # Draw the track (horizontal lines) over the terrain
-    pygame.draw.line(screen, (0, 0, 0), (TRACK_START_X, TRACK_TOP_Y), (TRACK_END_X, TRACK_TOP_Y), 5)
-    pygame.draw.line(screen, (0, 0, 0), (TRACK_START_X, TRACK_BOTTOM_Y), (TRACK_END_X, TRACK_BOTTOM_Y), 5)
+    pygame.draw.line(render_surface, (0, 0, 0), (TRACK_START_X, TRACK_TOP_Y), (TRACK_END_X, TRACK_TOP_Y), int(5 * RENDER_SCALE))
+    pygame.draw.line(render_surface, (0, 0, 0), (TRACK_START_X, TRACK_BOTTOM_Y), (TRACK_END_X, TRACK_BOTTOM_Y), int(5 * RENDER_SCALE))
 
     # Calculate computed_meters_to_finish for each horse based on cumulative gaps
     computed_meters_to_finish = {}
@@ -262,8 +270,6 @@ while running:
             horse_id = horse['horse_id']
             meters_to_finish = computed_meters_to_finish[horse_id]
             # Calculate target x position with margins
-            # Since meters_to_finish represents distance to finish line, horses with lower meters_to_finish are closer to the finish line (right side)
-            # So we need to map meters_to_finish inversely
             target_x = TRACK_START_X + SCALE * (max_meters_to_finish - meters_to_finish + MARGIN_DISTANCE)
             y_coordinate = horse['y_coordinate']
             # Map y_coordinate to screen_y
@@ -286,51 +292,51 @@ while running:
             horse_x = horse_pos['x']
             horse_y = horse_pos['y']
             # Draw the horse as a circle
-            pygame.draw.circle(screen, (0, 0, 255), (int(horse_x), int(horse_y)), 15)
+            pygame.draw.circle(render_surface, (0, 0, 255), (int(horse_x), int(horse_y)), int(15 * RENDER_SCALE))
             # Write the horse ID at the center of the circle
             horse_text = font.render(str(horse_id), True, (255, 255, 255))
             text_rect = horse_text.get_rect(center=(int(horse_x), int(horse_y)))
-            screen.blit(horse_text, text_rect)
+            render_surface.blit(horse_text, text_rect)
 
         # Draw the "AL TRAGUARDO" box for the first horse
         first_horse = current_standings[0]
         meters_to_finish_first_horse = int(computed_meters_to_finish[first_horse['horse_id']])
 
         # Define box dimensions
-        box_width = 203
-        box_height = 75
-        box_x = WINDOW_WIDTH - box_width - 10  # Bottom right corner
-        box_y = WINDOW_HEIGHT - box_height - 10
+        box_width = int(203 * RENDER_SCALE)
+        box_height = int(75 * RENDER_SCALE)
+        box_x = RENDER_WIDTH - box_width - int(10 * RENDER_SCALE)  # Bottom right corner
+        box_y = RENDER_HEIGHT - box_height - int(10 * RENDER_SCALE)
 
-        # Draw the box
-        pygame.draw.rect(screen, (100, 100, 100), (box_x, box_y, box_width, box_height), border_radius=10)
+        # Draw the box with original color
+        pygame.draw.rect(render_surface, (100, 100, 100), (box_x, box_y, box_width, box_height), border_radius=int(10 * RENDER_SCALE))
 
         # Draw the "AL TRAGUARDO" text
         al_traguardo_text = font.render("AL TRAGUARDO", True, (255, 255, 255))
-        al_traguardo_rect = al_traguardo_text.get_rect(center=(box_x + box_width / 2, box_y + 20))
-        screen.blit(al_traguardo_text, al_traguardo_rect)
+        al_traguardo_rect = al_traguardo_text.get_rect(center=(box_x + box_width / 2, box_y + int(20 * RENDER_SCALE)))
+        render_surface.blit(al_traguardo_text, al_traguardo_rect)
 
         # Draw the meters to finish or "FINITA!" if race is over
         if meters_to_finish_first_horse > 0:
             meters_text = large_font.render(f"{meters_to_finish_first_horse}m", True, (255, 255, 255))
         else:
             meters_text = large_font.render("FINITA!", True, (255, 255, 255))
-        meters_rect = meters_text.get_rect(center=(box_x + box_width / 2, box_y + box_height / 2 + 10))
-        screen.blit(meters_text, meters_rect)
+        meters_rect = meters_text.get_rect(center=(box_x + box_width / 2, box_y + box_height / 2 + int(10 * RENDER_SCALE)))
+        render_surface.blit(meters_text, meters_rect)
 
-        # Draw the "velocità in testa" box for the first horse's speed
-        speed_box_width = 203
-        speed_box_height = 75
-        speed_box_x = box_x - speed_box_width - 10  # Positioned to the left with 10 pixels spacing
-        speed_box_y = box_y  # Same y as the "AL TRAGUARDO" box
+        # Draw the "VELOCITÀ IN TESTA" box
+        speed_box_width = int(203 * RENDER_SCALE)
+        speed_box_height = int(75 * RENDER_SCALE)
+        speed_box_x = box_x - speed_box_width - int(10 * RENDER_SCALE)
+        speed_box_y = box_y
 
         # Draw the speed box
-        pygame.draw.rect(screen, (100, 100, 100), (speed_box_x, speed_box_y, speed_box_width, speed_box_height), border_radius=10)
+        pygame.draw.rect(render_surface, (100, 100, 100), (speed_box_x, speed_box_y, speed_box_width, speed_box_height), border_radius=int(10 * RENDER_SCALE))
 
         # Draw the "VELOCITÀ IN TESTA" text
         velocita_text = font.render("VELOCITÀ IN TESTA", True, (255, 255, 255))
-        velocita_rect = velocita_text.get_rect(center=(speed_box_x + speed_box_width / 2, speed_box_y + 20))
-        screen.blit(velocita_text, velocita_rect)
+        velocita_rect = velocita_text.get_rect(center=(speed_box_x + speed_box_width / 2, speed_box_y + int(20 * RENDER_SCALE)))
+        render_surface.blit(velocita_text, velocita_rect)
 
         # Draw the speed value
         speed_first_horse = first_horse['speed']
@@ -338,45 +344,21 @@ while running:
             speed_display_text = large_font.render(f"{speed_first_horse:.1f} km/h", True, (255, 255, 255))
         else:
             speed_display_text = large_font.render("N/A", True, (255, 255, 255))
-        speed_rect = speed_display_text.get_rect(center=(speed_box_x + speed_box_width / 2, speed_box_y + speed_box_height / 2 + 10))
-        screen.blit(speed_display_text, speed_rect)
-        
-        # Draw the "TEMPO" box for the first horse's time
-        time_box_width = 203
-        time_box_height = 75
-        time_box_x = speed_box_x - time_box_width - 10  # Positioned to the left of the "VELOCITÀ IN TESTA" box
-        time_box_y = box_y  # Same y as the other boxes
-
-        # Draw the time box
-        pygame.draw.rect(screen, (100, 100, 100), (time_box_x, time_box_y, time_box_width, time_box_height), border_radius=10)
-
-        # Draw the "TEMPO" text
-        tempo_text = font.render("TEMPO", True, (255, 255, 255))
-        tempo_rect = tempo_text.get_rect(center=(time_box_x + time_box_width / 2, time_box_y + 20))
-        screen.blit(tempo_text, tempo_rect)
-
-        # Draw the time value
-        time_first_horse = first_horse['time']  # Retrieve the time data from the first horse
-        if time_first_horse:
-            time_display_text = large_font.render(f"{time_first_horse}", True, (255, 255, 255))
-        else:
-            time_display_text = large_font.render("N/A", True, (255, 255, 255))
-        time_rect = time_display_text.get_rect(center=(time_box_x + time_box_width / 2, time_box_y + time_box_height / 2 + 10))
-        screen.blit(time_display_text, time_rect)
+        speed_rect = speed_display_text.get_rect(center=(speed_box_x + speed_box_width / 2, speed_box_y + speed_box_height / 2 + int(10 * RENDER_SCALE)))
+        render_surface.blit(speed_display_text, speed_rect)
 
         # Draw the finish line when appropriate
         FINISH_LINE_THRESHOLD = 150  # Show finish line when within 150 meters
         if meters_to_finish_first_horse <= FINISH_LINE_THRESHOLD and meters_to_finish_first_horse > -300:
             finish_line_x = TRACK_START_X + SCALE * (max_meters_to_finish - 0 + MARGIN_DISTANCE)
-            # Ensure the finish line does not go beyond the track end
             if finish_line_x <= TRACK_END_X:
-                pygame.draw.line(screen, (255, 0, 0), (finish_line_x, TRACK_TOP_Y), (finish_line_x, TRACK_BOTTOM_Y), 5)
-                # Optionally, draw a label "TRAGUARDO" above the finish line
-                # traguardo_text = font.render("TRAGUARDO", True, (255, 0, 0))
-                # traguardo_rect = traguardo_text.get_rect(center=(finish_line_x, TRACK_TOP_Y - 20))
-                # screen.blit(traguardo_text, traguardo_rect)
+                pygame.draw.line(render_surface, (255, 0, 0), (int(finish_line_x), TRACK_TOP_Y), (int(finish_line_x), TRACK_BOTTOM_Y), int(5 * RENDER_SCALE))
     else:
         positions = {}
+
+    # Scale down the high-resolution render surface to the screen size
+    scaled_surface = pygame.transform.smoothscale(render_surface, (WINDOW_WIDTH, WINDOW_HEIGHT))
+    screen.blit(scaled_surface, (0, 0))
 
     # Update the screen
     pygame.display.flip()
