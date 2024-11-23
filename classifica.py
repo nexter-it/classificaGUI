@@ -5,7 +5,8 @@ import re
 import random  # For generating random terrain elements
 
 # Settings for the UDP socket
-UDP_IP = "213.209.192.164"
+#213.209.192.164
+UDP_IP = "10.0.0.3"
 UDP_PORT = 4141
 
 # Create the UDP socket
@@ -87,9 +88,9 @@ udp_thread.start()
 pygame.init()
 
 # Window settings
-WINDOW_WIDTH = 1920 #Total window width
+WINDOW_WIDTH = 1920  # Total window width
 WINDOW_HEIGHT = 1080
-screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.NOFRAME)
 pygame.display.set_caption('Classifica Corse Cavalli')
 
 # Increase rendering resolution
@@ -108,8 +109,8 @@ large_font = pygame.font.Font(None, int(48 * RENDER_SCALE))  # For larger text
 LEFT_PANEL_WIDTH = int(250 * RENDER_SCALE)  # Width of the left panel
 TRACK_START_X = LEFT_PANEL_WIDTH + int(50 * RENDER_SCALE)
 TRACK_END_X = RENDER_WIDTH - int(50 * RENDER_SCALE)
-TRACK_TOP_Y = int(200 * RENDER_SCALE)
-TRACK_BOTTOM_Y = int(400 * RENDER_SCALE)
+TRACK_TOP_Y = int(20 * RENDER_SCALE)
+TRACK_BOTTOM_Y = int(220 * RENDER_SCALE)
 
 # Horse positions
 positions = {}
@@ -306,7 +307,7 @@ while running:
         box_width = int(203 * RENDER_SCALE)
         box_height = int(75 * RENDER_SCALE)
         box_x = RENDER_WIDTH - box_width - int(10 * RENDER_SCALE)  # Bottom right corner
-        box_y = RENDER_HEIGHT - box_height - int(10 * RENDER_SCALE)
+        box_y = RENDER_HEIGHT - box_height - int(100 * RENDER_SCALE)
 
         # Draw the box with original color
         pygame.draw.rect(render_surface, (100, 100, 100), (box_x, box_y, box_width, box_height), border_radius=int(10 * RENDER_SCALE))
