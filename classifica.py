@@ -95,7 +95,7 @@ screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.NOFRAME)
 pygame.display.set_caption('Classifica Corse Cavalli')
 
 # Aumenta la risoluzione di rendering
-RENDER_SCALE = 4  # Aumenta questo valore per una definizione più alta
+RENDER_SCALE = 2  # Aumenta questo valore per una definizione più alta
 RENDER_WIDTH = WINDOW_WIDTH * RENDER_SCALE
 RENDER_HEIGHT = WINDOW_HEIGHT * RENDER_SCALE
 
@@ -402,6 +402,6 @@ while running:
     # Aggiorna lo schermo
     pygame.display.flip()
     # Limita il frame rate
-    clock.tick(30)
+    clock.tick(0)
 
 pygame.quit()
